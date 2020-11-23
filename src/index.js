@@ -1,17 +1,11 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import * as serviceWorker from './serviceWorker';
+import ReactDom from 'react-dom';
+import App from './App.jsx';
+import storageUtils from './utils/storageUtils';
+import memoryUtils from './utils/memoryUtils';
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
-);
+// 启动app时就获取用户信息，放到内存中去，这样以后从内存中读取就更快了
+const user = storageUtils.getUser();
+memoryUtils.user = user;
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
+ReactDom.render(<App></App>, document.getElementById('root'));

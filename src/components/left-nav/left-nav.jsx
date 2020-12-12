@@ -8,15 +8,19 @@ import {
     PieChartOutlined,
     MailOutlined,
   } from '@ant-design/icons';
-import memoryUtils from '../../utils/memoryUtils';
+import {connect} from 'react-redux';
+import {setHeadTitle} from '../../dedux/actions';
+
+
 const { SubMenu } = Menu;
 class LeftNav extends React.Component {
 
     // 判断当前登录用户是否对item有权限
     hasAuth = (item) => {
         const {key, isPublic} = item;
-        const menus = memoryUtils.user.role.menus;
-        const username = memoryUtils.user.role.username;
+        const {user} = this.props;
+        const menus = user.role.menus;
+        const username = user.role.username;
 
         if (username === 'admin' || isPublic || menus.indexOf(key) !== -1) {
             return true;
@@ -36,9 +40,16 @@ class LeftNav extends React.Component {
             if (this.hasAuth(obj)) {
                 // 1.1如果没有children属性=>menuItem
                 if (!obj.children) {
+
+                    if (obj.key === path || path.indexOf(obj.key) === 0) {
+                        this.props.setHeadTitle(obj.title);
+                    }
+
                     return (
                     <Menu.Item key={obj.key} icon={<PieChartOutlined />}>
-                        <Link to={obj.key}>{obj.title}</Link>
+                        <Link to={obj.key}
+                        onClick={() => {this.props.setHeadTitle(obj.title)}}
+                        >{obj.title}</Link>
                     </Menu.Item>);
                 } else {
                     // 获取要展开的SubMenu
@@ -119,4 +130,7 @@ class LeftNav extends React.Component {
     }
 }
 
-export default withRouter(LeftNav);
+export default connect(
+    state => ({user: state.user}),
+    {setHeadTitle}
+)(withRouter(LeftNav));

@@ -3,14 +3,15 @@ import './login.less'
 import logo from '../../assets/images/logo.png';
 import { Form, Input, Button } from 'antd';
 import {UserOutlined, EyeInvisibleOutlined} from '@ant-design/icons';
-import {reqLogin} from '../../api';
-import { message } from 'antd';
-import memoryUtils from '../../utils/memoryUtils';
-import storageUtils from '../../utils/storageUtils';
+
+// import memoryUtils from '../../utils/memoryUtils';
+// import storageUtils from '../../utils/storageUtils';
 import {Redirect} from 'react-router-dom';
+import {connect} from 'react-redux';
+import {login} from '../../dedux/actions';
 
 // 登录的路由组件
-export default class Login extends React.Component {
+class Login extends React.Component {
 
     formRef = React.createRef();
 
@@ -36,21 +37,26 @@ export default class Login extends React.Component {
         // 这里涉及到跨域，用代理服务器解决跨域问题
         // 在package.json中配置proxy
         // result是response.data
-        const result = await reqLogin(username, password);
-        // {status:0,data:user} {status:1,msg:...}
-        // const result = response.data;
-        if (result.status === 0) { // 登陆成功
-            message.success('登录成功');
-            const user = result.data;
-            // 保存在内存中
-            memoryUtils.user = user;
-            // 保存在local中
-            storageUtils.saveUser(user);
-            // 跳转到管理界面
-            this.props.history.replace('/');
-        } else {
-            message.error(result.msg);
-        }
+
+        // 使用redux进行异步请求
+        console.log(login);
+        this.props.login(username, password);
+
+        // const result = await reqLogin(username, password);
+        // // {status:0,data:user} {status:1,msg:...}
+        // // const result = response.data;
+        // if (result.status === 0) { // 登陆成功
+        //     message.success('登录成功');
+        //     const user = result.data;
+        //     // 保存在内存中
+        //     memoryUtils.user = user;
+        //     // 保存在local中
+        //     storageUtils.saveUser(user);
+        //     // 跳转到管理界面
+        //     this.props.history.replace('/home');
+        // } else {
+        //     message.error(result.msg);
+        // }
     }
 
     onFinishFailed = (values) =>{
@@ -71,10 +77,10 @@ export default class Login extends React.Component {
     }
 
     render() {
-        const user = memoryUtils.user;
+        const user = this.props.user;
         // 判断是否登录
         if (user && user._id) {
-            return <Redirect to="/"></Redirect>;
+            return <Redirect to="/home"></Redirect>;
         }
 
         return (
@@ -85,6 +91,7 @@ export default class Login extends React.Component {
                     <h1>React项目 后台管理系统</h1>
                 </header>
                 <section className="login-content">
+                <div className={user.errorMsg ? 'error-msg show' : 'error-msg'}>{user.errorMsg}</div>
                     <h2>用户登录</h2>
                     <Form ref={this.formRef} className="login-form"
                         onFinish={this.onFinish} onFinishFailed={this.onFinishFailed}
@@ -133,3 +140,7 @@ export default class Login extends React.Component {
     }
 }
 
+export default connect(
+    state => ({user: state.user}),
+    {login}
+)(Login);

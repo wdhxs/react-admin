@@ -12,6 +12,7 @@ import AuthForm from './auth-form';
 import memoryUtils from '../../utils/memoryUtils';
 import {formateDate} from '../../utils/dateUtils';
 import storageUtils from '../../utils/storageUtils';
+import { connect } from 'react-redux';
 
 const dataSource = [
     {
@@ -62,7 +63,7 @@ const dataSource = [
     }
 ]
 
-export default class Role extends React.Component {
+class Role extends React.Component {
 
     state = {
         roles: dataSource, // 所有的角色
@@ -118,6 +119,7 @@ export default class Role extends React.Component {
             this.setState({
                 roles
             });
+            
         }
     }
 
@@ -148,14 +150,14 @@ export default class Role extends React.Component {
         const role = this.state.role;
         const menus = this.auth.current.getMenus();
         role.menus = menus;
-        role.auth_name = memoryUtils.user.username;
+        role.auth_name = this.props.user.username;
 
         const results = await reqUpdateRole(role);
         if (results.status === 0) {
             
             // 若当前更新的是自己的角色权限，强制退出
-            if (role._id === memoryUtils.user.role_id) {
-                memoryUtils.user = {};
+            if (role._id === this.props.user.role_id) {
+                this.props.user = {};
                 storageUtils.removeUser();
                 this.props.history.replace('/login');
             } else {
@@ -253,3 +255,8 @@ export default class Role extends React.Component {
         )
     }
 }
+
+export default connect(
+    state => ({user: state.user}),
+    {}
+)(Role);

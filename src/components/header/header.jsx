@@ -1,14 +1,16 @@
 import React from 'react';
 import {withRouter} from 'react-router-dom';
 import {formateDate} from '../../utils/dateUtils';
-import memoryUtils from '../../utils/memoryUtils';
-import storageUtils from '../../utils/storageUtils';
+// import memoryUtils from '../../utils/memoryUtils';
+// import storageUtils from '../../utils/storageUtils';
 import {reqWeather} from '../../api';
 import menuList from '../../config/menuConfig';
 import { Modal } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import LinkButton from '../link-button';
 import './index.less';
+import { connect } from 'react-redux';
+import {logout} from '../../dedux/actions';
 
 const { confirm } = Modal;
 
@@ -76,11 +78,13 @@ class Header extends React.Component {
             icon: <ExclamationCircleOutlined />,
             onOk: () => {
                 // 删除user数据
-                memoryUtils.user = {};
-                storageUtils.removeUser();
-
+                // memoryUtils.user = {};
+                // storageUtils.removeUser();
+                // redux 
+                // user 变为 {} 后 admin组件会重新跳转到login
+                this.props.logout();
                 // 这里面的this不是组件对象，使用箭头函数
-                this.props.history.replace('/login');
+                // this.props.history.replace('/login');
             },
             onCancel: () => {
             //   console.log('Cancel');
@@ -107,8 +111,9 @@ class Header extends React.Component {
 
     render() {
         const {currentTime, dayPictureUrl, weather} = this.state;
-        const userName = memoryUtils.user.username;
-        let title = this.getTitle();
+        const userName = this.props.user.username;
+        // let title = this.getTitle();
+        let title = this.props.headTitle;
 
         return (
             <div className="header">
@@ -128,5 +133,8 @@ class Header extends React.Component {
         )
     }
 }
-
-export default withRouter(Header);
+// 会接受一个headTitle的属性
+export default connect(
+    state => ({headTitle: state.headTitle, user: state.user}),
+    {logout}
+)(withRouter(Header));
